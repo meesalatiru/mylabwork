@@ -1,6 +1,9 @@
-# test change - add comment
-
 name: Azure Deployment
+
+# test change - add comment
+permissions:
+  id-token: write
+  contents: read
 
 on:
   push:
