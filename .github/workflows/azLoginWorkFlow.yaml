@@ -25,24 +25,24 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
-      - name: Ensure Contributor role assignment
-        uses: azure/cli@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            ASSIGNEE="e8802c8b-4c93-47de-a638-dfbf3a7446a5"
-            ROLE="Contributor"
-            SCOPE="/subscriptions/d0558c6e-1893-4530-9ddf-83e892cb2350"
+#      - name: Ensure Contributor role assignment
+#        uses: azure/cli@v2
+#        with:
+#          azcliversion: latest
+#          inlineScript: |
+#            ASSIGNEE="e8802c8b-4c93-47de-a638-dfbf3a7446a5"
+#            ROLE="Contributor"
+#            SCOPE="/subscriptions/d0558c6e-1893-4530-9ddf-83e892cb2350"
 
-            COUNT=$(az role assignment list --assignee $ASSIGNEE --role $ROLE --scope $SCOPE --query "length([])")
+#            COUNT=$(az role assignment list --assignee $ASSIGNEE --role $ROLE --scope $SCOPE --query "length([])")
 
-            if [ "$COUNT" -eq "0" ]; then
-              echo "Role assignment does not exist. Creating..."
-              az role assignment create --assignee $ASSIGNEE --role $ROLE --scope $SCOPE
-              echo "Role assignment created."
-            else
-              echo "Role assignment already exists. Skipping."
-            fi
+#            if [ "$COUNT" -eq "0" ]; then
+#              echo "Role assignment does not exist. Creating..."
+#              az role assignment create --assignee $ASSIGNEE --role $ROLE --scope $SCOPE
+#              echo "Role assignment created."
+#            else
+#              echo "Role assignment already exists. Skipping."
+#            fi
 
       - name: Create Resource Group
         uses: azure/cli@v2
