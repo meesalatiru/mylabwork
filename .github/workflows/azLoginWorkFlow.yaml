@@ -3,7 +3,8 @@ name: Azure Deployment
 on:
   push:
     branches:
-      - feature/vs
+      - main
+
 
 jobs:
   deploy:
