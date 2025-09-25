@@ -34,9 +34,9 @@ jobs:
             az deployment create \
               --name sv-rg-create \
               --location "South India" \
-              --template-file ../az-login/arm-templates/resourceGroup.json \
-              --parameters ../az-login/arm-templates/resourseGroup.parameters.json
-
+              --template-file ../arm-templates/resourceGroup.json \
+              --parameters ../arm-templates/resourseGroup.parameters.json
+              
 ########## Continuous Integration ###################
 
       - name: Build Java app with Maven
