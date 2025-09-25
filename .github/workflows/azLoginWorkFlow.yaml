@@ -1,0 +1,100 @@
+name: Azure Deployment
+
+on:
+  push:
+    branches:
+      - feature/vs
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest #this is the runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+########## THIS piece of code is for Infrastructure as Code ###################
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Create Resource Group
+        uses: azure/cli@v2
+        with:
+            azcliversion: latest
+            inlineScript: |
+                 az deployment create --name sv-rg-create --location "South India" --template-file ../az-login/arm-templates/resourceGroup.json --parameters ../az-login/arm-templates/resourseGroup.parameters.json
+      
+      # - name: Deploy ACR
+      #   uses: azure/arm-deploy@v1
+      #   with: 
+      #       resourceGroupName: ${{ secrets.AZURE_RG }}
+      #       template: ../az-login/arm-templates/azACR.json
+      #       parameters: ../az-login/arm-templates/azACR.parameters.json
+      
+      # - name: Deploy AKS
+      #   uses: azure/arm-deploy@v1
+      #   with: 
+      #       resourceGroupName: ${{ secrets.AZURE_RG }}
+      #       template: ../az-login/arm-templates/azAKS.json
+      #       parameters: ../az-login/arm-templates/azAKS.parameters.json
+
+########## THIS piece of code is for CI -Continous Integration ###################
+      - name: Build java app with maven
+        shell: bash
+        run: |
+          mvn clean package -q --file hw/pom.xml
+
+      - name: ACR Login
+        shell: bash
+        run: |
+            az acr login --name svacrmj
+
+      - name: Containerize java app with Docker
+        uses: docker/build-push-action@v3
+        with:
+          file: hw/Dockerfile #Dockerfile
+          push: true
+          context: .
+          tags: svacrmj.azurecr.io/hw
+
+########## THIS piece of code is for CD -Continous Delivery ###################
+
+      # Set up kubectl
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v1
+        with:
+          kubeconfig: ${{ secrets.AZURE_KUBECONFIG }}  # Add your kubeconfig to GitHub secrets
+
+      # Set up Helm
+      - name: Set up Helm
+        uses: azure/setup-helm@v1
+
+      - name: Set AKS Context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: sv-rg
+          cluster-name: sv-aks
+          # use-kubelogin: "true"
+
+      # Deploy with Helm
+      - name: Deploy Helm Chart
+        run: helm upgrade --install hw ../az-login/hw/deploy/ --namespace sv-ns  --set image.repository=svacrmj.azurecr.io/hw --set image.tag=latest 
+        # Ensure you specify the correct Helm chart, release name, and values file
+
+    
+      # - name: Deploy Virtual Machine
+      #   uses: azure/arm-deploy@v1
+      #   with: 
+      #       resourceGroupName: ${{ secrets.AZURE_RG }}
+      #       template: ../az-login/arm-templates/virtualMachine.json
+      #       parameters: ../az-login/arm-templates/virtualMachine.parameters.json
+
+      # - name: Deploy KeyVault
+      #   uses: azure/arm-deploy@v1
+      #   with: 
+      #       resourceGroupName: ${{ secrets.AZURE_RG }}
+      #       template: ../az-login/arm-templates/aksArmTemplate.json
+      #       parameters: ../az-login/arm-templates/aksArm.parameters.json
+      
