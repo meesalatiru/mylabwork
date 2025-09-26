@@ -33,9 +33,9 @@ jobs:
 #            ASSIGNEE="e8802c8b-4c93-47de-a638-dfbf3a7446a5"
 #            ROLE="Contributor"
 #            SCOPE="/subscriptions/d0558c6e-1893-4530-9ddf-83e892cb2350"
-
+#
 #            COUNT=$(az role assignment list --assignee $ASSIGNEE --role $ROLE --scope $SCOPE --query "length([])")
-
+#
 #            if [ "$COUNT" -eq "0" ]; then
 #              echo "Role assignment does not exist. Creating..."
 #              az role assignment create --assignee $ASSIGNEE --role $ROLE --scope $SCOPE
@@ -49,11 +49,11 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az deployment create \
+            az deployment sub create \
               --name sv-rg-create \
               --location "South India" \
               --template-file arm-templates/resourceGroup.json \
-              --parameters arm-templates/resourceGroup.parameters.json
+              -parameters @arm-templates/resourceGroup.parameters.json
 
 ########## Continuous Integration ###################
 
