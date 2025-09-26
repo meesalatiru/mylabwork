@@ -53,7 +53,7 @@ jobs:
               --name sv-rg-create \
               --location "South India" \
               --template-file arm-templates/resourceGroup.json \
-              -parameters @arm-templates/resourceGroup.parameters.json
+              --parameters @arm-templates/resourceGroup.parameters.json
 
 ########## Continuous Integration ###################
 
