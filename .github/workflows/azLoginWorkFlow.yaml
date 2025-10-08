@@ -15,85 +15,22 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
 ########## Infrastructure as Code ###################
 
-      - name: Login to Azure using Service Principal
+      - name: Login to Azure
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
-#      - name: Ensure Contributor role assignment
-#        uses: azure/cli@v2
-#        with:
-#          azcliversion: latest
-#          inlineScript: |
-#            ASSIGNEE="e8802c8b-4c93-47de-a638-dfbf3a7446a5"
-#            ROLE="Contributor"
-#            SCOPE="/subscriptions/d0558c6e-1893-4530-9ddf-83e892cb2350"
-#
-#            COUNT=$(az role assignment list --assignee $ASSIGNEE --role $ROLE --scope $SCOPE --query "length([])")
-#
-#            if [ "$COUNT" -eq "0" ]; then
-#              echo "Role assignment does not exist. Creating..."
-#              az role assignment create --assignee $ASSIGNEE --role $ROLE --scope $SCOPE
-#              echo "Role assignment created."
-#            else
-#              echo "Role assignment already exists. Skipping."
-#            fi
+      - name: Verify Azure Login
+        run: az account show
 
       - name: Create Resource Group
         uses: azure/cli@v2
         with:
           azcliversion: latest
           inlineScript: |
-            az deployment sub create \
-              --name sv-rg-create \
-              --location "South India" \
-              --template-file arm-templates/resourceGroup.json \
-              --parameters @arm-templates/resourceGroup.parameters.json
-
-########## Continuous Integration ###################
-
-      - name: Build Java app with Maven
-        shell: bash
-        run: |
-          mvn clean package -q --file hw/pom.xml
-
-      - name: ACR Login
-        shell: bash
-        run: |
-          az acr login --name svacrmj
-
-      - name: Containerize Java app with Docker
-        uses: docker/build-push-action@v3
-        with:
-          file: hw/Dockerfile
-          push: true
-          context: .
-          tags: svacrmj.azurecr.io/hw
-
-########## Continuous Delivery ###################
-
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v1
-        with:
-          kubeconfig: ${{ secrets.AZURE_KUBECONFIG }}
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v1
-
-      - name: Set AKS Context
-        uses: azure/aks-set-context@v3
-        with:
-          resource-group: sv-rg
-          cluster-name: sv-aks
-
-      - name: Deploy Helm Chart
-        run: |
-          helm upgrade --install hw ./hw/deploy/ \
-            --namespace sv-ns \
-            --set image.repository=svacrmj.azurecr.io/hw \
-            --set image.tag=latest
+            az depl
